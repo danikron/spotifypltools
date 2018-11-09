@@ -37,7 +37,7 @@ while [[ ! $response ]]; do
 
 	if [[ ! $response && ! $loop ]]; then
 		loop=1
-		echo -en "failed\naccess token was not acquired. Retrying ..."
+		echo -en "failed\nAccess token was not acquired. Retrying ..."
 	elif [[ ! $response && $loop -le 10 ]]; then
 		loop=$(($loop + 1))
 		echo -n "."
@@ -76,12 +76,12 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
 
 	#Feth playlist items
 
-	curl -s -X GET "https://api.spotify.com/v1/users/$seed_playlist/tracks?fields=items(track(name,href))" -H "Accept: application/json" -H "Authorization: Bearer $token" > splaylist-temp
+	curl -s -X GET "https://api.spotify.com/v1/users/$seed_playlist/tracks?fields=items(track(name,href))" -H "Accept: application/json" -H "Authorization: Bearer $token" > splaylist
 
 	for (( x=1; x<=$total; x++ )); do
 		req="https://api.spotify.com/v1/users/$seed_playlist/tracks?fields=items(track(href))&offset="
 		let "off=$x*100"
-		curl -s -X GET "$req$off" -H "Accept: application/json" -H "Authorization: Bearer $token" >> splaylist-temp;
+		curl -s -X GET "$req$off" -H "Accept: application/json" -H "Authorization: Bearer $token" >> splaylist
 	done
 
 	echo "done"
@@ -89,11 +89,11 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
 	# Format and shuffle playlist
 
 	echo -n "Shuffling playlist items ..."
-	sed -n '/"href"/p' splaylist-temp | cut -d'"' -f4 > splaylist
-	rm splaylist-temp
-	sed -i 's/https:\/\/api.spotify.com\/v1\/tracks\//spotify:track:/g' splaylist
-	shuf splaylist | shuf | shuf | shuf | shuf -o splaylist
-	uris=$(head -n 100 splaylist | sed -e :a -e '$!N; s/\n/\", \"/; ta')
+	sed -n '/"href"/p' splaylist | cut -d'"' -f4 > tplaylist
+	rm splaylist
+	sed -i 's/https:\/\/api.spotify.com\/v1\/tracks\//spotify:track:/g' tplaylist
+	shuf tplaylist | shuf | shuf | shuf | shuf -o tplaylist
+	uris=$(head -n 100 tplaylist | sed -e :a -e '$!N; s/\n/\", \"/; ta')
 	echo "done"
 
 	# Replace and rebuild second playlist
@@ -105,11 +105,11 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
 	for (( x=1; x<=$total; x++ )); do
 		let "off=$x*100+1"
 		let "end=$off+99"
-		uris=$(sed -n "$off,$end p; $(($end+1))q" splaylist | sed -e :a -e '$!N; s/\n/\", \"/; ta')
+		uris=$(sed -n "$off,$end p; $(($end+1))q" tplaylist | sed -e :a -e '$!N; s/\n/\", \"/; ta')
 		curl -s -i -X POST "https://api.spotify.com/v1/users/$target_playlist/tracks" -H "Authorization: Bearer $token" -H "Content-Type:application/json" --data "{ \"uris\" : [ \"$uris\" ] }" > /dev/null
 	done
 
-	rm splaylist
+	rm tplaylist
 	echo "done"
 else
 	echo -e "Screw it then!"
