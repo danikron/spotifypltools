@@ -1,5 +1,6 @@
 # spotifyplshuffle
 Imports the tracks of a seed playlist, shuffles them and exports them to a target playlist. The seed and target playlist can be the same.
+This was based on some other script but I forget which, sorry.
 
 ## Usage
 Reads a file `auth` in the working directory to find the client ID and client secret, which can be obtained by adding an approved application on the Spotify account page. The file should be formatted:
