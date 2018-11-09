@@ -13,4 +13,4 @@ seed:<user>/playlists/<playlist id>
 target:<user>/playlists/</playlist id>
 ```
 
-The script will open an authentication page in the default webbrowser in order to fetch an authentication token.
+The script will open an authentication page in the default webbrowser in order to fetch an access token. This operation requires nc, provided by GNU Netcat or openbsd-netcat.

@@ -30,14 +30,14 @@ function fetch_token() {
 	xdg-open $auth_endpoint &> /dev/null
 }
 
-echo -n "Fetching authentication token ..."
+echo -n "Fetching access token ..."
 
 while [[ ! $response ]]; do
 	response=$(fetch_token)
 
 	if [[ ! $response && ! $loop ]]; then
 		loop=1
-		echo -en "failed\nAuthentication token was not acquired. Retrying ..."
+		echo -en "failed\naccess token was not acquired. Retrying ..."
 	elif [[ ! $response && $loop -le 10 ]]; then
 		loop=$(($loop + 1))
 		echo -n "."
