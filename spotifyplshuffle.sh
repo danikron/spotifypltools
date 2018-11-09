@@ -66,13 +66,11 @@ read -p "This will replace the playlist \"$target_name\". Continue? [y/N] " -n 1
 echo #
 echo #
 
-if [[ $REPLY =~ ^[Yy]$ ]]
-then
+if [[ $REPLY =~ ^[Yy]$ ]]; then
 
 	#Fetch playlist total
 
 	echo -n "Fetching seed playlist ..."
-
 	total=$(curl -s -X GET "https://api.spotify.com/v1/users/$seed_playlist/tracks?fields=total" -H "Accept: application/json" -H "Authorization: Bearer $token" | tr -dc '0-9')
 	total=$(($total/100 + 1))
 
@@ -91,13 +89,11 @@ then
 	# Format and shuffle playlist
 
 	echo -n "Shuffling playlist items ..."
-
 	sed -n '/"href"/p' splaylist-temp | cut -d'"' -f4 > splaylist
 	rm splaylist-temp
 	sed -i 's/https:\/\/api.spotify.com\/v1\/tracks\//spotify:track:/g' splaylist
 	shuf splaylist | shuf | shuf | shuf | shuf -o splaylist
 	uris=$(head -n 100 splaylist | sed -e :a -e '$!N; s/\n/\", \"/; ta')
-
 	echo "done"
 
 	# Replace and rebuild second playlist
@@ -115,8 +111,6 @@ then
 
 	rm splaylist
 	echo "done"
-
 else
 	echo -e "Screw it then!"
-
 fi
