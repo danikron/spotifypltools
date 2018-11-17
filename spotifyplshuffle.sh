@@ -1,5 +1,15 @@
 #! /bin/sh
 
+# Check for required files
+
+if [[ ! -f ./auth ]]; then
+	>&2 echo "spotscript: could not find auth-file in working directory"
+	exit 1
+elif [[ ! -f ./playlists ]]; then
+	>&2 echo "spotscript: could not find playlists-file in working directory"
+	exit 1
+fi
+
 # Fetch access token
 
 seed_playlist=$(cat playlists | grep 'seed:' | cut -d: -f2)
@@ -10,6 +20,11 @@ port=8082
 redirect_uri=http%3A%2F%2Flocalhost%3A$port%2F
 auth_endpoint=https://accounts.spotify.com/authorize/?response_type=code\&client_id=$client_id\&redirect_uri=$redirect_uri
 scopes="playlist-read-collaborative playlist-modify-public playlist-modify-private"
+
+if [[ ! $seed_playlist || ! $target_playlist || ! $client_id || ! $client_secret ]]; then
+	>&2 echo "spotscript: could not aqcuire necessary information from auth- and/or playlists-file"
+	exit 1
+fi
 
 if [[ "$seed_playlist" = "$target_playlist" ]]; then
 	>&2 echo "$(tput setaf 11;tput bold)warning:$(tput sgr 0) the target playlist is the same as the seed playlist"
