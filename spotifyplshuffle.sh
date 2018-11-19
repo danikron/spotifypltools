@@ -1,6 +1,12 @@
 #! /bin/sh
 
-SCRIPTPATH="$(cd "$(dirname "$0")"; pwd -P)"
+SCRIPTPATH="$0"
+while [ -h "$SCRIPTPATH" ]; do
+  SCRIPTDIR="$(cd -P "$(dirname "$SCRIPTPATH")" >/dev/null && pwd)"
+  SCRIPTPATH="$(readlink "$SCRIPTPATH")"
+  [[ $SCRIPTPATH != /* ]] && SOURCE="$SCRIPTDIR/$SCRIPTPATH"
+done
+SCRIPTPATH="$(cd -P "$(dirname "$SCRIPTPATH")" >/dev/null && pwd)"
 
 # Check for required files
 
