@@ -1,21 +1,23 @@
 #! /bin/sh
 
+SCRIPTPATH="$(cd "$(dirname "$0")"; pwd -P)"
+
 # Check for required files
 
-if [[ ! -f ./auth ]]; then
+if [[ ! -f "$SCRIPTPATH/auth" ]]; then
 	>&2 echo "spotscript: could not find auth-file in working directory"
 	exit 1
-elif [[ ! -f ./playlists ]]; then
+elif [[ ! -f "$SCRIPTPATH/playlists" ]]; then
 	>&2 echo "spotscript: could not find playlists-file in working directory"
 	exit 1
 fi
 
 # Fetch access token
 
-seed_playlist=$(cat playlists | grep 'seed:' | cut -d: -f2)
-target_playlist=$(cat playlists | grep 'target:' | cut -d: -f2)
-client_id=$(cat auth | grep 'id:' | cut -d: -f2)
-client_secret=$(cat auth | grep 'secret:' | cut -d: -f2)
+seed_playlist=$(cat "$SCRIPTPATH/playlists" | grep 'seed:' | cut -d: -f2)
+target_playlist=$(cat "$SCRIPTPATH/playlists" | grep 'target:' | cut -d: -f2)
+client_id=$(cat "$SCRIPTPATH/auth" | grep 'id:' | cut -d: -f2)
+client_secret=$(cat "$SCRIPTPATH/auth" | grep 'secret:' | cut -d: -f2)
 port=8082
 redirect_uri=http%3A%2F%2Flocalhost%3A$port%2F
 auth_endpoint=https://accounts.spotify.com/authorize/?response_type=code\&client_id=$client_id\&redirect_uri=$redirect_uri
