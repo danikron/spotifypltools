@@ -2,9 +2,9 @@
 
 SCRIPTPATH="$0"
 while [ -h "$SCRIPTPATH" ]; do
-  SCRIPTDIR="$(cd -P "$(dirname "$SCRIPTPATH")" >/dev/null && pwd)"
-  SCRIPTPATH="$(readlink "$SCRIPTPATH")"
-  [[ $SCRIPTPATH != /* ]] && SOURCE="$SCRIPTDIR/$SCRIPTPATH"
+	SCRIPTDIR="$(cd -P "$(dirname "$SCRIPTPATH")" >/dev/null && pwd)"
+	SCRIPTPATH="$(readlink "$SCRIPTPATH")"
+	[[ $SCRIPTPATH != /* ]] && SOURCE="$SCRIPTDIR/$SCRIPTPATH"
 done
 SCRIPTPATH="$(cd -P "$(dirname "$SCRIPTPATH")" >/dev/null && pwd)"
 
@@ -78,7 +78,7 @@ response=$(curl -s https://accounts.spotify.com/api/token \
 	-H "Content-Type:application/x-www-form-urlencoded" \
 	-H "Authorization: Basic $(printf $client_id:$client_secret | base64 -w 0)" \
 	-d "grant_type=authorization_code&code=$code&redirect_uri=$redirect_uri")
-token=$(printf $response | cut -d'"' -f4)
+	token=$(printf $response | cut -d'"' -f4)
 
 #Prompt for confirmation
 
