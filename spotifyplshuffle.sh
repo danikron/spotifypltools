@@ -11,10 +11,10 @@ SCRIPTPATH="$(cd -P "$(dirname "$SCRIPTPATH")" >/dev/null && pwd)"
 # Check for required files
 
 if [[ ! -f "$SCRIPTPATH/auth" ]]; then
-	>&2 echo "spotscript: could not find auth-file in working directory"
+	>&2 echo "spotscript: could not find auth-file in script directory"
 	exit 1
 elif [[ ! -f "$SCRIPTPATH/playlists" ]]; then
-	>&2 echo "spotscript: could not find playlists-file in working directory"
+	>&2 echo "spotscript: could not find playlists-file in script directory"
 	exit 1
 fi
 
