@@ -176,7 +176,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
 
 	echo -n "Randomizing local track position "
 
-	for (( x=1; x<=$local; x++ )); do
+	for (( x=0; x<$local; x++ )); do
 		rand=$(($local - $x + RANDOM % ($total - 1 - $local + $x)))
 		curl -s -i -X PUT "https://api.spotify.com/v1/users/$target_playlist/tracks" -H "Authorization: Bearer $token" -H "Content-Type:application/json" --data "{ \"range_start\" : 0, \"insert_before\" : $rand }" > /dev/null
 		echo -n "."
