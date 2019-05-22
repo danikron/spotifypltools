@@ -17,4 +17,8 @@ seed:<user>/playlists/<playlist id>
 target:<user>/playlists/</playlist id>
 ```
 
-The scripts will open an authentication page in the default webbrowser in order to fetch an access token. This operation requires nc, provided by GNU Netcat or openbsd-netcat. 
+The scripts will open an authentication page in the default webbrowser in order to fetch an access token. This operation requires nc, provided by GNU Netcat or openbsd-netcat.
+
+## Requirements
+ - `netstat`
+
