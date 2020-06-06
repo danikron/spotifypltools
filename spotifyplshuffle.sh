@@ -85,7 +85,7 @@ response=$(curl -s https://accounts.spotify.com/api/token \
 target_name=$(curl -s -X GET "https://api.spotify.com/v1/users/$target_playlist?fields=name" -H "Accept: application/json" -H "Authorization: Bearer $token" | awk -F'"' '{print $4}' | tr -d "\n")
 
 if [[ $(echo $target_name | grep -i invalid) ]]; then
-	>&2 echo "spotscript: invalid access token aquired"
+	>&2 echo "spotscript: invalid access token acquired"
 	exit 1
 fi
 
