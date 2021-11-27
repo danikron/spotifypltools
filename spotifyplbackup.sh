@@ -109,12 +109,12 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
 	echo -en "done\nFormatting backup file ..."
 
 	grep -e "spotify:local" -e "https://api.spotify.com" -e "\"name\"" /tmp/splaylist | grep -v "/artists/" | cut -d'"' -f4 > $seed_name
-	sed -i 's/https:\/\/api.spotify.com\/v1\/tracks\//spotify:track:/g' $seed_name
+	sed -i 's/https:\/\/api.spotify.com\/v1\/tracks\//spotify:track:/g' "$seed_name"
 	sed -i "/spotify:local/{a
-}" $seed_name
+}" "$seed_name"
 	sed -i "/spotify:track/{N;a
-}" $seed_name
-	truncate -s -1 $seed_name
+}" "$seed_name"
+	truncate -s -1 "$seed_name"
 
 	echo "done"
 
