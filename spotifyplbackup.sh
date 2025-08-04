@@ -96,26 +96,19 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
 	# Feth seed playlist items
 
 	echo -n "Fetching seed playlist items "
-	curl -s  GET "https://api.spotify.com/v1/users/$seed_playlist/tracks?fields=items(track(album(name,artists),name,href))" -H "Accept: application/json" -H "Authorization: Bearer $token" > /tmp/splaylist
+	result=()
+	result=$(curl -s  GET "https://api.spotify.com/v1/users/$seed_playlist/tracks?fields=items(track(artists(name),album(name),name,href))" -H "Accept: application/json" -H "Authorization: Bearer $token" | jq '.[]')
 	echo -n "."
 
-	for (( x=0; x<=$total; x++ )); do
-		req="https://api.spotify.com/v1/users/$seed_playlist/tracks?fields=items(track(album(name,artists),name,href))&offset="
+	for (( x=1; x<=$total; x++ )); do
+		req="https://api.spotify.com/v1/users/$seed_playlist/tracks?fields=items(track(artists(name),album(name),name,href))&offset="
 		let "off=$x*100"
-		curl -s -X GET "$req$off" -H "Accept: application/json" -H "Authorization: Bearer $token" >> /tmp/splaylist
+		result+=$(curl -s -X GET "$req$off" -H "Accept: application/json" -H "Authorization: Bearer $token" | jq '.[]')
 		echo -n "."
 	done
-
-	echo -en "done\nFormatting backup file ..."
-
-	grep -e "spotify:local" -e "https://api.spotify.com" -e "\"name\"" /tmp/splaylist | grep -v "/artists/" | cut -d'"' -f4 > $seed_name
-	sed -i 's/https:\/\/api.spotify.com\/v1\/tracks\//spotify:track:/g' "$seed_name"
-	sed -i "/spotify:local/{a
-}" "$seed_name"
-	sed -i "/spotify:track/{N;a
-}" "$seed_name"
-	truncate -s -1 "$seed_name"
-
+	echo "done"
+	echo -n "Exporting file .."
+	echo $result | jq -s 'add' > $seed_name
 	echo "done"
 
 else
