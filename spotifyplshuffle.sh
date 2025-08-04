@@ -106,13 +106,13 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
 	# Feth seed playlist items
 
 	echo -n "Fetching seed playlist items "
-	curl -s -X GET "https://api.spotify.com/v1/users/$seed_playlist/tracks?fields=items(track(name,href))" -H "Accept: application/json" -H "Authorization: Bearer $token" > /tmp/splaylist
+	curl -s -X GET "https://api.spotify.com/v1/users/$seed_playlist/tracks?fields=items(track(name,href))" -H "Accept: application/json" -H "Authorization: Bearer $token" | jq '.[][].track.href' > /tmp/splaylist
 	echo -n "."
 
 	for (( x=1; x<=$iterations; x++ )); do
 		req="https://api.spotify.com/v1/users/$seed_playlist/tracks?fields=items(track(href))&offset="
 		let "off=$x*100"
-		curl -s -X GET "$req$off" -H "Accept: application/json" -H "Authorization: Bearer $token" >> /tmp/splaylist
+		curl -s -X GET "$req$off" -H "Accept: application/json" -H "Authorization: Bearer $token" | jq '.[][].track.href' >> /tmp/splaylist
 		echo -n "."
 	done
 
@@ -122,33 +122,33 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
 
 	echo -n "Fethching target playlist items "
 
-	curl -s -X GET "https://api.spotify.com/v1/users/$target_playlist/tracks?fields=items(track(name,href))" -H "Accept: application/json" -H "Authorization: Bearer $token" > /tmp/tplaylist
+	curl -s -X GET "https://api.spotify.com/v1/users/$target_playlist/tracks?fields=items(track(name,href))" -H "Accept: application/json" -H "Authorization: Bearer $token" | jq '.[][].track.href' > /tmp/tplaylist
 	echo -n "."
 
 	for (( x=1; x<=$iterations; x++ )); do
-		req="https://api.spotify.com/v1/users/$target_playlist/tracks?fields=items(track(href))&offset="
+		req="https://api.spotify.com/v1/users/$target_playlist/tracks?fields=items(track(name,href))&offset="
 		let "off=$x*100"
-		curl -s -X GET "$req$off" -H "Accept: application/json" -H "Authorization: Bearer $token" >> /tmp/tplaylist
+		curl -s -X GET "$req$off" -H "Accept: application/json" -H "Authorization: Bearer $token" | jq '.[][].track.href' >> /tmp/tplaylist
 		echo -n "."
 	done
 
 	echo "done"
 
-	local=$(grep -c "spotify:local" /tmp/tplaylist)
+	local=$(grep -c "null" /tmp/tplaylist)
 
 	# Clear target playlist
 
 	echo -n "Clearing target playlist "
 
-	grep -v "spotify:local" /tmp/tplaylist | sed -n '/"href"/p' | cut -d'"' -f4 > /tmp/cplaylist
+	grep -v "null" /tmp/tplaylist | awk '{print "{ \"uri\": "$0" }"}' > /tmp/cplaylist
 	sed -i '/^$/d' /tmp/cplaylist
 	sed -i 's/https:\/\/api.spotify.com\/v1\/tracks\//spotify:track:/g' /tmp/cplaylist
 
 	for (( x=0; x<=$iterations; x++ )); do
 		let "off=$x*100+1"
 		let "end=$off+99"
-		uris=$(sed -n "$off,$end p; $(($end+1))q" /tmp/cplaylist | sed -e :a -e '$!N; s/\n/\", \"/; ta')
-		curl -s -i -X DELETE "https://api.spotify.com/v1/users/$target_playlist/tracks" -H "Authorization: Bearer $token" -H "Content-Type:application/json" --data "{ \"uris\" : [ \"$uris\" ] }" > /dev/null
+		uris=$(sed -n "$off,$end p; $(($end+1))q" /tmp/cplaylist | sed -e :a -e '$!N; s/\n/,/; ta')
+		curl -s -i -X DELETE "https://api.spotify.com/v1/users/$target_playlist/tracks" -H "Authorization: Bearer $token" -H "Content-Type:application/json" --data "{ \"tracks\" : [ $uris ] }" > /dev/null
 		echo -n "."
 	done
 
@@ -157,7 +157,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
 	# Format and shuffle playlist
 
 	echo -n "Shuffling playlist items ..."
-	grep -v "spotify:local" /tmp/splaylist | sed -n '/"href"/p' | cut -d'"' -f4 > /tmp/tplaylist
+	grep -v "null" /tmp/splaylist > /tmp/tplaylist
 	sed -i '/^$/d' /tmp/tplaylist
 	sed -i 's/https:\/\/api.spotify.com\/v1\/tracks\//spotify:track:/g' /tmp/tplaylist
 	shuf /tmp/tplaylist | shuf | shuf | shuf | shuf -o /tmp/tplaylist
@@ -170,8 +170,8 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
 	for (( x=0; x<=$iterations; x++ )); do
 		let "off=$x*100+1"
 		let "end=$off+99"
-		uris=$(sed -n "$off,$end p; $(($end+1))q" /tmp/tplaylist | sed -e :a -e '$!N; s/\n/\", \"/; ta')
-		curl -s -i -X POST "https://api.spotify.com/v1/users/$target_playlist/tracks" -H "Authorization: Bearer $token" -H "Content-Type:application/json" --data "{ \"uris\" : [ \"$uris\" ] }" > /dev/null
+		uris=$(sed -n "$off,$end p; $(($end+1))q" /tmp/tplaylist | sed -e :a -e '$!N; s/\n/,/; ta')
+		curl -s -i -X POST "https://api.spotify.com/v1/users/$target_playlist/tracks" -H "Authorization: Bearer $token" -H "Content-Type:application/json" --data "{ \"uris\" : [ $uris ] }" > /dev/null
 		echo -n "."
 	done
 
@@ -183,7 +183,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
 
 	for (( x=0; x<$local; x++ )); do
 		rand=$(($local - $x + RANDOM % ($total - 1 - $local + $x)))
-		curl -s -i -X PUT "https://api.spotify.com/v1/users/$target_playlist/tracks" -H "Authorization: Bearer $token" -H "Content-Type:application/json" --data "{ \"range_start\" : 0, \"insert_before\" : $rand }" > /dev/null
+		curl -s -i -X PUT "https://api.spotify.com/v1/playlists/${target_playlist#*playlists/}/tracks" -H "Authorization: Bearer $token" -H "Content-Type:application/json" --data "{ \"range_start\" : 0, \"insert_before\" : $rand }" > /dev/null
 		echo -n "."
 	done
 
@@ -192,3 +192,4 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
 else
 	echo -e "Screw it then!"
 fi
+
